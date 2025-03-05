@@ -1,19 +1,15 @@
 package net.shirojr.fallflyingrestrictions.event;
 
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 import net.shirojr.fallflyingrestrictions.command.ZoneRestrictionCommands;
+import net.shirojr.fallflyingrestrictions.config.ConfigInit;
 import net.shirojr.fallflyingrestrictions.data.PersistentWorldData;
-import net.shirojr.fallflyingrestrictions.data.VolumeData;
-import net.shirojr.fallflyingrestrictions.data.shape.Volume;
-import net.shirojr.fallflyingrestrictions.network.ChannelIdentifiers;
-import net.shirojr.fallflyingrestrictions.network.S2CNetworking;
+import net.shirojr.fallflyingrestrictions.network.packet.ClearZoneCachePacket;
+import net.shirojr.fallflyingrestrictions.network.packet.ConfigUpdateResponsePacket;
+import net.shirojr.fallflyingrestrictions.network.packet.UpdateZoneCachePacket;
 
 public class CommonEvents {
     static {
@@ -28,34 +24,31 @@ public class CommonEvents {
 
     private static void handlePlayerJoinEvent() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            S2CNetworking.sendServerConfigUpdateResponse(handler.player);
+            new ConfigUpdateResponsePacket(
+                    ConfigInit.CONFIG.displayWarning,
+                    ConfigInit.CONFIG.toggleFeatures,
+                    ConfigInit.CONFIG.restrictionValues)
+                    .sendPacket(handler.player);
 
-            PersistentWorldData persistentWorldData = PersistentWorldData.getServerState(server, handler.player.world.getRegistryKey());
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeVarInt(persistentWorldData.getNoFlyingZones().size());
-
-            for (VolumeData data : persistentWorldData.getNoFlyingZones()) {
-                Identifier identifier = data.identifier();
-                Volume volume = data.volume();
-
-                buf.writeIdentifier(identifier);
-                volume.toPacketByteBuf(buf);
-            }
-            ServerPlayNetworking.send(handler.player, ChannelIdentifiers.UPDATE_ZONE_CACHE_S2C, buf);
+            PersistentWorldData persistentWorldData = PersistentWorldData.getServerState(server, handler.player.getWorld().getRegistryKey());
+            new UpdateZoneCachePacket(persistentWorldData.getNoFlyingZones().size(), persistentWorldData.getNoFlyingZones()).sendPacket(handler.player);
         });
 
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
-                ServerPlayNetworking.send(handler.player, ChannelIdentifiers.CLEAR_ZONE_CACHE_S2C, PacketByteBufs.empty())
-        );
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> new ClearZoneCachePacket().sendPacket(handler.player));
     }
 
     private static void handleSleepEvent() {
         EntitySleepEvents.START_SLEEPING.register((entity, sleepingPos) -> {
             if (!(entity instanceof ServerPlayerEntity player)) return;
-            S2CNetworking.sendServerConfigUpdateResponse(player);
+            new ConfigUpdateResponsePacket(
+                    ConfigInit.CONFIG.displayWarning,
+                    ConfigInit.CONFIG.toggleFeatures,
+                    ConfigInit.CONFIG.restrictionValues
+            ).sendPacket(player);
         });
     }
 
     public static void initialize() {
+        // static initialisation
     }
 }

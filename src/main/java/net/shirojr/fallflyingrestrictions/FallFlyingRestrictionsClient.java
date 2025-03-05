@@ -15,7 +15,7 @@ public class FallFlyingRestrictionsClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        S2CNetworking.registerS2CPackets();
+        S2CNetworking.initialize();
     }
 
     public static boolean isClientPlayer(LivingEntity entity) {

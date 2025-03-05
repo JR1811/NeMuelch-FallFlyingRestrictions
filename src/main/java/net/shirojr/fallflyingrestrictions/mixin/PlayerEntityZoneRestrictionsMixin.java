@@ -3,7 +3,7 @@ package net.shirojr.fallflyingrestrictions.mixin;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.shirojr.fallflyingrestrictions.FallFlyingRestrictionsClient;
 import net.shirojr.fallflyingrestrictions.config.ConfigInit;
@@ -24,7 +24,7 @@ public class PlayerEntityZoneRestrictionsMixin {
         if (player.getWorld().isClient()) {
             boolean canStart = PersistentWorldData.canStartFlying(pos, FallFlyingRestrictionsClient.CACHED_ZONES);
             if (!canStart && ConfigInit.CONFIG.displayWarning.enabledZoneTakeOffWarning()) {
-                player.sendMessage(new TranslatableText("notification.fallflyingrestrictions.restricted_zone.prevent_start_flying"), true);
+                player.sendMessage(Text.translatable("notification.fallflyingrestrictions.restricted_zone.prevent_start_flying"), true);
             }
             return canStart;
         } else {
@@ -33,7 +33,7 @@ public class PlayerEntityZoneRestrictionsMixin {
             List<VolumeData> zones = PersistentWorldData.getServerState(server, player.getWorld().getRegistryKey()).getNoFlyingZones();
             boolean canStart = PersistentWorldData.canStartFlying(pos, zones);
             if (!canStart && ConfigInit.CONFIG.displayWarning.enabledZoneTakeOffWarning()) {
-                player.sendMessage(new TranslatableText("notification.fallflyingrestrictions.restricted_zone.prevent_start_flying"), true);
+                player.sendMessage(Text.translatable("notification.fallflyingrestrictions.restricted_zone.prevent_start_flying"), true);
             }
             return canStart;
         }

@@ -4,7 +4,7 @@ import net.minecraft.network.PacketByteBuf;
 
 @SuppressWarnings({"FieldMayBeFinal"})
 public class WarningData {
-    private boolean modifiedMovement;
+    private boolean badWeatherCondition;
     private boolean flyingTooHigh;
     private boolean blockedInventory;
     private boolean blockedEating;
@@ -12,7 +12,7 @@ public class WarningData {
     private boolean zoneFlying;
 
     public WarningData() {
-        this.modifiedMovement = true;
+        this.badWeatherCondition = true;
         this.blockedInventory = true;
         this.blockedEating = true;
         this.flyingTooHigh = true;
@@ -20,8 +20,8 @@ public class WarningData {
         this.zoneFlying = true;
     }
 
-    public boolean enabledMovementWarning() {
-        return modifiedMovement;
+    public boolean badWeatherConditionWarning() {
+        return badWeatherCondition;
     }
 
     public boolean enabledBlockedInventoryWarning() {
@@ -46,7 +46,7 @@ public class WarningData {
 
     public static WarningData fromPacketByteBuf(PacketByteBuf buf) {
         WarningData data = new WarningData();
-        data.modifiedMovement = buf.readBoolean();
+        data.badWeatherCondition = buf.readBoolean();
         data.flyingTooHigh = buf.readBoolean();
         data.blockedInventory = buf.readBoolean();
         data.blockedEating = buf.readBoolean();
@@ -56,7 +56,7 @@ public class WarningData {
     }
 
     public static void toPacketByteBuf(PacketByteBuf buf, WarningData data) {
-        buf.writeBoolean(data.modifiedMovement);
+        buf.writeBoolean(data.badWeatherCondition);
         buf.writeBoolean(data.flyingTooHigh);
         buf.writeBoolean(data.blockedInventory);
         buf.writeBoolean(data.blockedEating);

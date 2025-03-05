@@ -1,7 +1,7 @@
 package net.shirojr.fallflyingrestrictions.mixin;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.shirojr.fallflyingrestrictions.config.ConfigInit;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +16,7 @@ public abstract class PlayerEntityMixin {
         if (!ConfigInit.CONFIG.toggleFeatures.enabledEatingWhileFlyingBlock()) return;
         if (player.isFallFlying() && player.getHungerManager().isNotFull()) {
             if (ConfigInit.CONFIG.displayWarning.enabledEatingWhileFlyingWarning()) {
-                player.sendMessage(new TranslatableText("notification.fallflyingrestrictions.eating_block"), true);
+                player.sendMessage(Text.translatable("notification.fallflyingrestrictions.eating_block"), true);
             }
             cir.setReturnValue(false);
         }

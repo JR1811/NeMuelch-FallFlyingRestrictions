@@ -6,7 +6,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -35,13 +35,13 @@ public abstract class LivingEntityMixin {
 
         if (isFlyingTooHigh(instance)) {
             if (ConfigInit.CONFIG.displayWarning.enabledFlyingTooHighWarning() && instance instanceof ServerPlayerEntity player) {
-                player.sendMessage(new TranslatableText("notification.fallflyingrestrictions.flying_too_high"), true);
+                player.sendMessage(Text.translatable("notification.fallflyingrestrictions.flying_too_high"), true);
             }
             heightDownForce = new Vec3d(0.0, -(ConfigInit.CONFIG.restrictionValues.getFlyingTooHighDownForce()), 0.0);
         }
         if (!isOptimalFlyingCondition(instance)) {
-            if (ConfigInit.CONFIG.displayWarning.enabledMovementWarning() && instance instanceof ServerPlayerEntity player) {
-                player.sendMessage(new TranslatableText("notification.fallflyingrestrictions.bad_flying_condition"), true);
+            if (ConfigInit.CONFIG.displayWarning.badWeatherConditionWarning() && instance instanceof ServerPlayerEntity player) {
+                player.sendMessage(Text.translatable("notification.fallflyingrestrictions.bad_flying_condition"), true);
             }
             badWeatherDownForce = new Vec3d(0.0, -(ConfigInit.CONFIG.restrictionValues.getBadWeatherDownForce()), 0.0);
         }

@@ -7,7 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import net.shirojr.fallflyingrestrictions.FallFlyingRestrictions;
 
 public class SphereShape implements Volume {
-    public static final Identifier IDENTIFIER = new Identifier(FallFlyingRestrictions.MOD_ID, "sphere");
+    public static final Identifier IDENTIFIER = FallFlyingRestrictions.getId("sphere");
 
     private final BlockPos center;
     private final double distance;

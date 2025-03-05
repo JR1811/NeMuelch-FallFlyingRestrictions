@@ -8,7 +8,8 @@ import net.minecraft.util.math.BlockPos;
 import net.shirojr.fallflyingrestrictions.FallFlyingRestrictions;
 
 public class BoxShape implements Volume {
-    public static final Identifier IDENTIFIER = new Identifier(FallFlyingRestrictions.MOD_ID, "box");
+
+    public static final Identifier IDENTIFIER = FallFlyingRestrictions.getId("box");
 
     private final BlockPos min;
     private final BlockPos max;
@@ -108,7 +109,7 @@ public class BoxShape implements Volume {
 
     @Override
     public BlockPos center() {
-        BlockPos centerOffset = new BlockPos(
+        BlockPos centerOffset = BlockPos.ofFloored(
                 (this.max.getX() - this.min.getX()) * 0.5,
                 (this.max.getY() - this.min.getY()) * 0.5,
                 (this.max.getZ() - this.min.getZ()) * 0.5
