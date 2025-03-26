@@ -4,7 +4,8 @@ import net.minecraft.network.PacketByteBuf;
 
 @SuppressWarnings({"FieldMayBeFinal"})
 public class FeatureToggleData {
-    private boolean movementChanges, flightHeightAboveGroundSafety, flyingTooHigh, roofAboveHeadSafety, inventoryBlock, eatingBlock;
+    private boolean movementChanges, flightHeightAboveGroundSafety, flyingTooHigh, roofAboveHeadSafety, inventoryBlock,
+            eatingBlock, itemUsageBlock;
 
     public FeatureToggleData() {
         this.movementChanges = true;
@@ -13,6 +14,7 @@ public class FeatureToggleData {
         this.roofAboveHeadSafety = true;
         this.inventoryBlock = true;
         this.eatingBlock = false;
+        this.itemUsageBlock = true;
     }
 
     public boolean enabledMovementChanges() {
@@ -39,6 +41,10 @@ public class FeatureToggleData {
         return eatingBlock;
     }
 
+    public boolean enabledItemUsageBlock() {
+        return itemUsageBlock;
+    }
+
     public static FeatureToggleData fromPacketByteBuf(PacketByteBuf buf) {
         FeatureToggleData data = new FeatureToggleData();
         data.movementChanges = buf.readBoolean();
@@ -47,6 +53,7 @@ public class FeatureToggleData {
         data.roofAboveHeadSafety = buf.readBoolean();
         data.inventoryBlock = buf.readBoolean();
         data.eatingBlock = buf.readBoolean();
+        data.itemUsageBlock = buf.readBoolean();
         return data;
     }
 
@@ -57,5 +64,6 @@ public class FeatureToggleData {
         buf.writeBoolean(data.roofAboveHeadSafety);
         buf.writeBoolean(data.inventoryBlock);
         buf.writeBoolean(data.eatingBlock);
+        buf.writeBoolean(data.itemUsageBlock);
     }
 }

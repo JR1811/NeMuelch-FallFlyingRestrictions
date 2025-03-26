@@ -8,6 +8,7 @@ public class WarningData {
     private boolean flyingTooHigh;
     private boolean blockedInventory;
     private boolean blockedEating;
+    private boolean blockedItemUsage;
     private boolean zoneTakeOff;
     private boolean zoneFlying;
 
@@ -18,6 +19,7 @@ public class WarningData {
         this.flyingTooHigh = true;
         this.zoneTakeOff = true;
         this.zoneFlying = true;
+        this.blockedItemUsage = true;
     }
 
     public boolean badWeatherConditionWarning() {
@@ -44,6 +46,11 @@ public class WarningData {
         return zoneFlying;
     }
 
+    public boolean enabledBlockedItemUsage() {
+        return blockedItemUsage;
+    }
+
+
     public static WarningData fromPacketByteBuf(PacketByteBuf buf) {
         WarningData data = new WarningData();
         data.badWeatherCondition = buf.readBoolean();
@@ -52,6 +59,7 @@ public class WarningData {
         data.blockedEating = buf.readBoolean();
         data.zoneTakeOff = buf.readBoolean();
         data.zoneFlying = buf.readBoolean();
+        data.blockedItemUsage = buf.readBoolean();
         return data;
     }
 
@@ -62,5 +70,6 @@ public class WarningData {
         buf.writeBoolean(data.blockedEating);
         buf.writeBoolean(data.zoneTakeOff);
         buf.writeBoolean(data.zoneFlying);
+        buf.writeBoolean(data.blockedItemUsage);
     }
 }

@@ -4,5 +4,6 @@
   "notification.fallflyingrestrictions.inventory_block": "§4[No Access]§r Inventory is blocked while flying!",
   "notification.fallflyingrestrictions.eating_block": "§4[No Eating]§r Eating is blocked while flying!",
   "notification.fallflyingrestrictions.restricted_zone.prevent_start_flying": "§4[Zone]§r Zone doesn't allow for a take-off!",
-  "notification.fallflyingrestrictions.restricted_zone.interrupt_flying": "§4[Zone]§r Zone doesn't allow flying!"
+  "notification.fallflyingrestrictions.restricted_zone.interrupt_flying": "§4[Zone]§r Zone doesn't allow flying!",
+  "notification.fallflyingrestrictions.blocked_item_usage": "§4[Usage]§r Item isn't usable right now!"
 }
