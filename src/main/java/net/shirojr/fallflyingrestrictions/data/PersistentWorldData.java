@@ -63,7 +63,7 @@ public class PersistentWorldData extends PersistentState {
 
         NbtCompound noFlyingZonesNbt = nbt.getCompound("noFlyingZones");
         for (String key : noFlyingZonesNbt.getKeys()) {
-            Identifier identifier = FallFlyingRestrictions.getId(key);
+            Identifier identifier = Identifier.of(key);
             NbtCompound shapeContent = noFlyingZonesNbt.getCompound(key);
 
             if (identifier.equals(BoxShape.IDENTIFIER)) {
