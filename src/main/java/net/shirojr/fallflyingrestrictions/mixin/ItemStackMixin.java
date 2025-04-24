@@ -2,6 +2,7 @@ package net.shirojr.fallflyingrestrictions.mixin;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.FireworkRocketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.text.Text;
@@ -52,7 +53,9 @@ public class ItemStackMixin {
 
     @Unique
     private boolean allowUsage(ItemStack stack, LivingEntity entity) {
-        if (!ConfigInit.CONFIG.toggleFeatures.enabledItemUsageBlock()) return true;
+        if (stack.getItem() instanceof FireworkRocketItem) {
+            return !ConfigInit.CONFIG.toggleFeatures.enableRocketUsageBlock();
+        } else if (!ConfigInit.CONFIG.toggleFeatures.enabledItemUsageBlock()) return true;
         if (stack.getItem().getUseAction(stack).equals(UseAction.EAT)) return true;
         if (!entity.isFallFlying()) return true;
         return stack.getItem().getUseAction(stack).equals(UseAction.DRINK);

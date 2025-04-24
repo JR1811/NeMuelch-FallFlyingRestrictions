@@ -12,6 +12,7 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 import net.shirojr.fallflyingrestrictions.FallFlyingRestrictions;
+import net.shirojr.fallflyingrestrictions.config.ConfigInit;
 import net.shirojr.fallflyingrestrictions.data.shape.BoxShape;
 import net.shirojr.fallflyingrestrictions.data.shape.SphereShape;
 import net.shirojr.fallflyingrestrictions.network.packet.UpdateZoneCachePacket;
@@ -32,7 +33,7 @@ public class PersistentWorldData extends PersistentState {
 
     public void modifyNoFlyingZones(Consumer<List<VolumeData>> zones, MinecraftServer server) {
         zones.accept(this.noFlyingZones);
-        PlayerLookup.all(server).forEach(player -> new UpdateZoneCachePacket(this.getNoFlyingZones().size(), this.getNoFlyingZones()));
+        PlayerLookup.all(server).forEach(player -> new UpdateZoneCachePacket(this.getNoFlyingZones().size(), this.getNoFlyingZones()).sendPacket(player));
     }
 
     public List<VolumeData> getNoFlyingZones() {
@@ -41,21 +42,21 @@ public class PersistentWorldData extends PersistentState {
 
     public static boolean canStartFlying(BlockPos pos, List<VolumeData> list) {
         for (VolumeData data : list) {
-            if (data.volume().contains(pos) && data.volume().preventStartFlying()) {
-                return false;
+            if (data.volume().contains(pos)) {
+                return !data.volume().preventStartFlying();
             }
         }
-        return true;
+        return ConfigInit.CONFIG.globalZoneRestrictions.preventStartFlying();
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean interruptFlying(BlockPos pos, List<VolumeData> list) {
         for (VolumeData entry : list) {
-            if (entry.volume().contains(pos) && entry.volume().interruptFlying()) {
-                return true;
+            if (entry.volume().contains(pos)) {
+                return entry.volume().interruptFlying();
             }
         }
-        return false;
+        return ConfigInit.CONFIG.globalZoneRestrictions.interruptFlying();
     }
 
     public static PersistentWorldData fromNbt(NbtCompound nbt) {
