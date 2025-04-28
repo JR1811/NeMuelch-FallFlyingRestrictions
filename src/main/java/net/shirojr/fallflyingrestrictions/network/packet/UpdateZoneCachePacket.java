@@ -5,8 +5,11 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import net.shirojr.fallflyingrestrictions.FallFlyingRestrictionsClient;
 import net.shirojr.fallflyingrestrictions.data.VolumeData;
 import net.shirojr.fallflyingrestrictions.data.shape.BoxShape;
@@ -31,6 +34,7 @@ public record UpdateZoneCachePacket(int listSize, List<VolumeData> zones) implem
         for (VolumeData entry : value.zones()) {
             Volume volume = entry.volume();
             buf.writeIdentifier(entry.identifier());
+            buf.writeIdentifier(entry.dimension().getValue());
             volume.toPacketByteBuf(buf);
         }
     }, buf -> {
@@ -38,6 +42,7 @@ public record UpdateZoneCachePacket(int listSize, List<VolumeData> zones) implem
         List<VolumeData> data = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             Identifier identifier = buf.readIdentifier();
+            RegistryKey<World> dimension = RegistryKey.of(RegistryKeys.WORLD, buf.readIdentifier());
 
             Volume volume = null;
             if (identifier.equals(BoxShape.IDENTIFIER)) {
@@ -47,7 +52,7 @@ public record UpdateZoneCachePacket(int listSize, List<VolumeData> zones) implem
             }
             if (volume == null) continue;
 
-            data.add(new VolumeData(identifier, volume));
+            data.add(new VolumeData(identifier, volume, dimension));
         }
         return new UpdateZoneCachePacket(size, data);
     });

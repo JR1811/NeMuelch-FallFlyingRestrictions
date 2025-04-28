@@ -5,7 +5,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.BlockPosArgumentType;
@@ -25,6 +24,7 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class ZoneRestrictionCommands {
+    @SuppressWarnings("unused")
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(literal("flying").requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(2))
                 .then(literal("zone")
@@ -114,7 +114,7 @@ public class ZoneRestrictionCommands {
         boolean preventStartFlying = BoolArgumentType.getBool(context, "preventStartFlying");
         boolean interruptFlying = BoolArgumentType.getBool(context, "interruptFlying");
 
-        VolumeData volumeData = new VolumeData(BoxShape.IDENTIFIER, new BoxShape(start, end, considerHeight, preventStartFlying, interruptFlying));
+        VolumeData volumeData = new VolumeData(BoxShape.IDENTIFIER, new BoxShape(start, end, considerHeight, preventStartFlying, interruptFlying), context.getSource().getWorld().getRegistryKey());
         accessWorldData(context).modifyNoFlyingZones(volumeDataList -> volumeDataList.add(volumeData), context.getSource().getServer());
 
         StringBuilder builder = new StringBuilder("Created new Box Shape | start: [%s] | end: [%s]".formatted(start.toShortString(), end.toShortString()));
@@ -132,7 +132,7 @@ public class ZoneRestrictionCommands {
         boolean preventStartFlying = BoolArgumentType.getBool(context, "preventStartFlying");
         boolean interruptFlying = BoolArgumentType.getBool(context, "interruptFlying");
 
-        VolumeData volumeData = new VolumeData(SphereShape.IDENTIFIER, new SphereShape(center, distance, preventStartFlying, interruptFlying));
+        VolumeData volumeData = new VolumeData(SphereShape.IDENTIFIER, new SphereShape(center, distance, preventStartFlying, interruptFlying), context.getSource().getWorld().getRegistryKey());
         accessWorldData(context).modifyNoFlyingZones(volumeDataList -> volumeDataList.add(volumeData), context.getSource().getServer());
 
         StringBuilder builder = new StringBuilder("Created new Sphere Shape | center: [%s] | distance: [%s]".formatted(center.toShortString(), distance));

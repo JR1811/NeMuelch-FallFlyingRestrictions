@@ -5,7 +5,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
 import net.shirojr.fallflyingrestrictions.FallFlyingRestrictionsClient;
 import net.shirojr.fallflyingrestrictions.config.ConfigInit;
 import net.shirojr.fallflyingrestrictions.data.PersistentWorldData;
@@ -21,10 +20,9 @@ public class LivingEntityZoneRestrictionsMixin {
     private boolean isInNoFlyingZone(boolean original) {
         if (!original) return false;
         LivingEntity entity = (LivingEntity) (Object) this;
-        BlockPos pos = entity.getBlockPos();
         if (entity.getWorld().isClient()) {
             if (!FallFlyingRestrictionsClient.isClientPlayer(entity)) return original;
-            boolean interrupt = PersistentWorldData.interruptFlying(pos, FallFlyingRestrictionsClient.CACHED_ZONES);
+            boolean interrupt = PersistentWorldData.interruptFlying(entity, FallFlyingRestrictionsClient.CACHED_ZONES);
             if (interrupt && entity instanceof PlayerEntity player && ConfigInit.CONFIG.displayWarning.enabledZoneFlying()) {
                 player.sendMessage(Text.translatable("notification.fallflyingrestrictions.restricted_zone.interrupt_flying"), true);
             }
@@ -33,7 +31,7 @@ public class LivingEntityZoneRestrictionsMixin {
             MinecraftServer server = entity.getServer();
             if (server == null) return original;
             List<VolumeData> zones = PersistentWorldData.getServerState(server, entity.getWorld().getRegistryKey()).getNoFlyingZones();
-            boolean interrupt = PersistentWorldData.interruptFlying(pos, zones);
+            boolean interrupt = PersistentWorldData.interruptFlying(entity, zones);
             if (interrupt && entity instanceof PlayerEntity player && ConfigInit.CONFIG.displayWarning.enabledZoneFlying()) {
                 player.sendMessage(Text.translatable("notification.fallflyingrestrictions.restricted_zone.interrupt_flying"), true);
             }

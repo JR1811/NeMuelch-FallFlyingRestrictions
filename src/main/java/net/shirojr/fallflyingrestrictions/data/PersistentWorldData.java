@@ -1,13 +1,14 @@
 package net.shirojr.fallflyingrestrictions.data;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
@@ -40,19 +41,21 @@ public class PersistentWorldData extends PersistentState {
         return Collections.unmodifiableList(noFlyingZones);
     }
 
-    public static boolean canStartFlying(BlockPos pos, List<VolumeData> list) {
-        for (VolumeData data : list) {
-            if (data.volume().contains(pos)) {
-                return !data.volume().preventStartFlying();
+    public static boolean canStartFlying(LivingEntity entity, List<VolumeData> list) {
+        for (VolumeData entry : list) {
+            if (!entry.dimension().equals(entity.getWorld().getRegistryKey())) continue;
+            if (entry.volume().contains(entity.getBlockPos())) {
+                return !entry.volume().preventStartFlying();
             }
         }
-        return ConfigInit.CONFIG.globalZoneRestrictions.preventStartFlying();
+        return !ConfigInit.CONFIG.globalZoneRestrictions.preventStartFlying();
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public static boolean interruptFlying(BlockPos pos, List<VolumeData> list) {
+    public static boolean interruptFlying(LivingEntity entity, List<VolumeData> list) {
         for (VolumeData entry : list) {
-            if (entry.volume().contains(pos)) {
+            if (entry.volume().contains(entity.getBlockPos())) {
+                if (!entry.dimension().equals(entity.getWorld().getRegistryKey())) continue;
                 return entry.volume().interruptFlying();
             }
         }
@@ -66,11 +69,12 @@ public class PersistentWorldData extends PersistentState {
         for (String key : noFlyingZonesNbt.getKeys()) {
             Identifier identifier = Identifier.of(key);
             NbtCompound shapeContent = noFlyingZonesNbt.getCompound(key);
+            Identifier dimension = Identifier.of(shapeContent.getString("dimension"));
 
             if (identifier.equals(BoxShape.IDENTIFIER)) {
-                persistentData.noFlyingZones.add(new VolumeData(identifier, BoxShape.fromNbt(shapeContent)));
+                persistentData.noFlyingZones.add(new VolumeData(identifier, BoxShape.fromNbt(shapeContent), RegistryKey.of(RegistryKeys.WORLD, dimension)));
             } else if (identifier.equals(SphereShape.IDENTIFIER)) {
-                persistentData.noFlyingZones.add(new VolumeData(identifier, SphereShape.fromNbt(shapeContent)));
+                persistentData.noFlyingZones.add(new VolumeData(identifier, SphereShape.fromNbt(shapeContent), RegistryKey.of(RegistryKeys.WORLD, dimension)));
             }
         }
         persistentData.markDirty();
@@ -80,8 +84,9 @@ public class PersistentWorldData extends PersistentState {
     @Override
     public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         NbtCompound noFlyingZonesNbt = new NbtCompound();
-        for (var entry : this.noFlyingZones) {
-            noFlyingZonesNbt.put(entry.identifier().toString(), entry.volume().toNbt());
+        for (VolumeData entry : this.noFlyingZones) {
+            NbtCompound shapeContent = entry.volume().toNbt();
+            noFlyingZonesNbt.put(entry.identifier().toString(), shapeContent);
         }
         nbt.put("noFlyingZones", noFlyingZonesNbt);
         return nbt;
