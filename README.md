@@ -20,13 +20,21 @@ This mod changes the default behavior of the "FallFlying" movement used by Elytr
 - Players in the FallFlying state can't open their inventory.
 - Players in the FallFlying state can't eat food.
 - Zones can be defined in which player's either can't take off or can't fly through or both at once
+- Zone properties can also be specified globally using the config. Local zones override those global properties!
 - Every feature, additional conditions and their GUI warning can be adjusted using the config file (Cloth Config needed)
 
 [](https://c.tenor.com/By6XN6Lyx48AAAAj/plague-doctor.gif)
 
+<div style="text-align: center;">
 <br>
 <a href="https://fabricmc.net/"><img
-    src="https://github.com/JR1811/Boatism/raw/master/external/promo/fabric_supported.png"
+    src="https://raw.githubusercontent.com/fabricated-atelier/.github/a021bde84febcb68adc69fc7ae60114e8c0902db/assets/badges/bc25/supported_on_fabric_loader.svg"
     alt="Supported on Fabric"
     width="200"
 ></a>
+<a href="https://modfest.net/bc25">
+<img src="https://raw.githubusercontent.com/fabricated-atelier/.github/f026478715176aeb6a334f1c21765031d9b6c3f9/assets/badges/bc25/featured_in_bc25.svg"
+    alt="BlanketCon25"
+    width="200"
+/></a>
+</div>
