@@ -35,6 +35,7 @@ public class PersistentWorldData extends PersistentState {
     public void modifyNoFlyingZones(Consumer<List<VolumeData>> zones, MinecraftServer server) {
         zones.accept(this.noFlyingZones);
         PlayerLookup.all(server).forEach(player -> new UpdateZoneCachePacket(this.getNoFlyingZones().size(), this.getNoFlyingZones()).sendPacket(player));
+        markDirty();
     }
 
     public List<VolumeData> getNoFlyingZones() {
@@ -86,6 +87,7 @@ public class PersistentWorldData extends PersistentState {
         NbtCompound noFlyingZonesNbt = new NbtCompound();
         for (VolumeData entry : this.noFlyingZones) {
             NbtCompound shapeContent = entry.volume().toNbt();
+            shapeContent.putString("dimension", entry.dimension().getValue().toString());
             noFlyingZonesNbt.put(entry.identifier().toString(), shapeContent);
         }
         nbt.put("noFlyingZones", noFlyingZonesNbt);

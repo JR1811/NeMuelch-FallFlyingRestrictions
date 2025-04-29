@@ -90,10 +90,11 @@ public class ZoneRestrictionCommands {
         List<VolumeData> list = accessWorldData(context).getNoFlyingZones();
         for (int i = 0; i < list.size(); i++) {
             VolumeData entry = list.get(i);
-            print(context, "%s | Center: %s | Volume Count: %s".formatted(
+            print(context, "%s | Center: %s | Volume Count: %s | World: %s".formatted(
                     entry.identifier().getPath(),
                     entry.volume().center().toShortString(),
-                    entry.volume().blockCount()
+                    entry.volume().blockCount(),
+                    entry.dimension().getValue()
             ), true);
             StringBuilder builder = new StringBuilder();
             if (entry.volume().preventStartFlying()) builder.append(" | prevents flying take-off | ");
@@ -144,6 +145,7 @@ public class ZoneRestrictionCommands {
     }
 
 
+    @SuppressWarnings("SameParameterValue")
     private static void print(CommandContext<ServerCommandSource> context, String message, boolean toOps) {
         context.getSource().sendFeedback(() -> Text.literal(message), toOps);
     }
