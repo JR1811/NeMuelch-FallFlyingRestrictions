@@ -1,11 +1,13 @@
 package net.shirojr.fallflyingrestrictions.data;
 
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -16,7 +18,7 @@ import net.shirojr.fallflyingrestrictions.FallFlyingRestrictions;
 import net.shirojr.fallflyingrestrictions.config.ConfigInit;
 import net.shirojr.fallflyingrestrictions.data.shape.BoxShape;
 import net.shirojr.fallflyingrestrictions.data.shape.SphereShape;
-import net.shirojr.fallflyingrestrictions.network.packet.UpdateZoneCachePacket;
+import net.shirojr.fallflyingrestrictions.network.ChannelIdentifiers;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,15 +28,19 @@ import java.util.function.Consumer;
 public class PersistentWorldData extends PersistentState {
     private final List<VolumeData> noFlyingZones = new ArrayList<>();
 
-    private static final Type<PersistentWorldData> type = new Type<>(
-            PersistentWorldData::new,
-            (nbt, registryLookup) -> PersistentWorldData.fromNbt(nbt),
-            null
-    );
-
     public void modifyNoFlyingZones(Consumer<List<VolumeData>> zones, MinecraftServer server) {
         zones.accept(this.noFlyingZones);
-        PlayerLookup.all(server).forEach(player -> new UpdateZoneCachePacket(this.getNoFlyingZones().size(), this.getNoFlyingZones()).sendPacket(player));
+        PlayerLookup.all(server).forEach(player -> {
+            // zone cache update
+            int zoneListSize = this.getNoFlyingZones().size();
+            PacketByteBuf zoneBuf = PacketByteBufs.create();
+            zoneBuf.writeVarInt(zoneListSize);
+            for (VolumeData entry : this.getNoFlyingZones()) {
+                entry.toPacketByteBuf(zoneBuf);
+            }
+            ServerPlayNetworking.send(player, ChannelIdentifiers.UPDATE_ZONE_CACHE_S2C, zoneBuf);
+        });
+        markDirty();
     }
 
     public List<VolumeData> getNoFlyingZones() {
@@ -67,9 +73,9 @@ public class PersistentWorldData extends PersistentState {
 
         NbtCompound noFlyingZonesNbt = nbt.getCompound("noFlyingZones");
         for (String key : noFlyingZonesNbt.getKeys()) {
-            Identifier identifier = Identifier.of(key);
+            Identifier identifier = new Identifier(key);
             NbtCompound shapeContent = noFlyingZonesNbt.getCompound(key);
-            Identifier dimension = Identifier.of(shapeContent.getString("dimension"));
+            Identifier dimension = new Identifier(shapeContent.getString("dimension"));
 
             if (identifier.equals(BoxShape.IDENTIFIER)) {
                 persistentData.noFlyingZones.add(new VolumeData(identifier, BoxShape.fromNbt(shapeContent), RegistryKey.of(RegistryKeys.WORLD, dimension)));
@@ -82,10 +88,11 @@ public class PersistentWorldData extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+    public NbtCompound writeNbt(NbtCompound nbt) {
         NbtCompound noFlyingZonesNbt = new NbtCompound();
         for (VolumeData entry : this.noFlyingZones) {
             NbtCompound shapeContent = entry.volume().toNbt();
+            shapeContent.putString("dimension", entry.dimension().getValue().toString());
             noFlyingZonesNbt.put(entry.identifier().toString(), shapeContent);
         }
         nbt.put("noFlyingZones", noFlyingZonesNbt);
@@ -98,7 +105,7 @@ public class PersistentWorldData extends PersistentState {
             throw new RuntimeException("Couldn't load [%s] for persistent state. (%s)".formatted(worldKey.getValue().toString(), FallFlyingRestrictions.MOD_ID));
         }
         PersistentStateManager manager = world.getPersistentStateManager();
-        PersistentWorldData data = manager.getOrCreate(type, FallFlyingRestrictions.MOD_ID);
+        PersistentWorldData data = manager.getOrCreate(PersistentWorldData::fromNbt, PersistentWorldData::new, FallFlyingRestrictions.MOD_ID);
         data.markDirty();
         return data;
     }
