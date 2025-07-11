@@ -9,9 +9,10 @@ public interface Volume {
     @SuppressWarnings("unused")
     Identifier getIdentifier();
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean contains(BlockPos pos);
 
-    NbtCompound toNbt();
+    void toNbt(NbtCompound nbt);
 
     PacketByteBuf toPacketByteBuf(PacketByteBuf buf);
 
@@ -21,5 +22,5 @@ public interface Volume {
 
     boolean preventStartFlying();
 
-    boolean interruptFlying();
+    boolean interruptsFlying();
 }

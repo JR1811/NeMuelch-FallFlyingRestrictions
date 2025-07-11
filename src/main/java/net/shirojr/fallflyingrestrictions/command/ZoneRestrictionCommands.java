@@ -8,12 +8,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-import net.shirojr.fallflyingrestrictions.data.PersistentWorldData;
+import net.shirojr.fallflyingrestrictions.cca.component.ZoneComponent;
 import net.shirojr.fallflyingrestrictions.data.VolumeData;
 import net.shirojr.fallflyingrestrictions.data.shape.BoxShape;
 import net.shirojr.fallflyingrestrictions.data.shape.SphereShape;
@@ -75,19 +74,26 @@ public class ZoneRestrictionCommands {
 
     private static int remove(CommandContext<ServerCommandSource> context) {
         BlockPos center = BlockPosArgumentType.getBlockPos(context, "center");
-        accessWorldData(context).modifyNoFlyingZones(data -> data.removeIf(entry -> entry.volume().center().equals(center)), context.getSource().getServer());
+        ZoneComponent zoneComponent = ZoneComponent.fromWorld(context.getSource().getWorld());
+        zoneComponent.modifyVolumes(
+                volumeData -> volumeData.removeIf(entry -> entry.volume().center().equals(center)),
+                true,
+                true
+        );
         print(context, "Removed volume", true);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int removeAll(CommandContext<ServerCommandSource> context) {
-        accessWorldData(context).modifyNoFlyingZones(List::clear, context.getSource().getServer());
+        ZoneComponent zoneComponent = ZoneComponent.fromWorld(context.getSource().getWorld());
+        zoneComponent.modifyVolumes(List::clear, true, true);
         print(context, "Removed all volumes", true);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int printAll(CommandContext<ServerCommandSource> context) {
-        List<VolumeData> list = accessWorldData(context).getNoFlyingZones();
+        ZoneComponent zoneComponent = ZoneComponent.fromWorld(context.getSource().getWorld());
+        List<VolumeData> list = zoneComponent.getVolumes();
         for (int i = 0; i < list.size(); i++) {
             VolumeData entry = list.get(i);
             print(context, "%s | Center: %s | Volume Count: %s | World: %s".formatted(
@@ -98,7 +104,7 @@ public class ZoneRestrictionCommands {
             ), true);
             StringBuilder builder = new StringBuilder();
             if (entry.volume().preventStartFlying()) builder.append(" | prevents flying take-off | ");
-            if (entry.volume().interruptFlying()) builder.append(" | player will fall out of the air | ");
+            if (entry.volume().interruptsFlying()) builder.append(" | player will fall out of the air | ");
             print(context, builder.toString(), true);
             if (i < list.size() - 1) {
                 print(context, "-----", true);
@@ -116,7 +122,8 @@ public class ZoneRestrictionCommands {
         boolean interruptFlying = BoolArgumentType.getBool(context, "interruptFlying");
 
         VolumeData volumeData = new VolumeData(BoxShape.IDENTIFIER, new BoxShape(start, end, considerHeight, preventStartFlying, interruptFlying), context.getSource().getWorld().getRegistryKey());
-        accessWorldData(context).modifyNoFlyingZones(volumeDataList -> volumeDataList.add(volumeData), context.getSource().getServer());
+        ZoneComponent zoneComponent = ZoneComponent.fromWorld(context.getSource().getWorld());
+        zoneComponent.modifyVolumes(persistentVolumeData -> persistentVolumeData.add(volumeData), true, true);
 
         StringBuilder builder = new StringBuilder("Created new Box Shape | start: [%s] | end: [%s]".formatted(start.toShortString(), end.toShortString()));
         if (considerHeight) builder.append(" | considers height values");
@@ -134,7 +141,8 @@ public class ZoneRestrictionCommands {
         boolean interruptFlying = BoolArgumentType.getBool(context, "interruptFlying");
 
         VolumeData volumeData = new VolumeData(SphereShape.IDENTIFIER, new SphereShape(center, distance, preventStartFlying, interruptFlying), context.getSource().getWorld().getRegistryKey());
-        accessWorldData(context).modifyNoFlyingZones(volumeDataList -> volumeDataList.add(volumeData), context.getSource().getServer());
+        ZoneComponent zoneComponent = ZoneComponent.fromWorld(context.getSource().getWorld());
+        zoneComponent.modifyVolumes(persistentVolumeData -> persistentVolumeData.add(volumeData), true, true);
 
         StringBuilder builder = new StringBuilder("Created new Sphere Shape | center: [%s] | distance: [%s]".formatted(center.toShortString(), distance));
         if (preventStartFlying) builder.append(" | prevents start flying");
@@ -149,12 +157,6 @@ public class ZoneRestrictionCommands {
     private static void print(CommandContext<ServerCommandSource> context, String message, boolean toOps) {
         context.getSource().sendFeedback(() -> Text.literal(message), toOps);
     }
-
-    private static PersistentWorldData accessWorldData(CommandContext<ServerCommandSource> context) {
-        MinecraftServer server = context.getSource().getServer();
-        return PersistentWorldData.getServerState(server, context.getSource().getWorld().getRegistryKey());
-    }
-
 
     private static final SuggestionProvider<ServerCommandSource> PREVENT_START_FLYING = (context, builder) -> {
         builder.suggest("true", Text.literal("Players can't start flying in this volume"));

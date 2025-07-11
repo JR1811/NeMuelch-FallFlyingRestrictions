@@ -38,12 +38,13 @@ public class BoxShape implements Volume {
     }
 
     public static BoxShape fromNbt(NbtCompound nbt) {
+        NbtCompound shapeNbt = nbt.getCompound("shape");
         return new BoxShape(
-                BlockPos.fromLong(nbt.getLong("min")),
-                BlockPos.fromLong(nbt.getLong("max")),
-                nbt.getBoolean("considerHeight"),
-                nbt.getBoolean("preventStartFlying"),
-                nbt.getBoolean("interruptFlying")
+                BlockPos.fromLong(shapeNbt.getLong("min")),
+                BlockPos.fromLong(shapeNbt.getLong("max")),
+                shapeNbt.getBoolean("considerHeight"),
+                shapeNbt.getBoolean("preventStartFlying"),
+                shapeNbt.getBoolean("interruptFlying")
         );
     }
 
@@ -77,14 +78,14 @@ public class BoxShape implements Volume {
     }
 
     @Override
-    public NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
-        nbt.putLong("min", this.min.asLong());
-        nbt.putLong("max", this.max.asLong());
-        nbt.putBoolean("considerHeight", this.considerHeight);
-        nbt.putBoolean("preventStartFlying", this.preventStartFlying);
-        nbt.putBoolean("interruptFlying", this.interruptFlying);
-        return nbt;
+    public void toNbt(NbtCompound nbt) {
+        NbtCompound shapeNbt = new NbtCompound();
+        shapeNbt.putLong("min", this.min.asLong());
+        shapeNbt.putLong("max", this.max.asLong());
+        shapeNbt.putBoolean("considerHeight", this.considerHeight);
+        shapeNbt.putBoolean("preventStartFlying", this.preventStartFlying);
+        shapeNbt.putBoolean("interruptFlying", this.interruptFlying);
+        nbt.put("shape", shapeNbt);
     }
 
     @Override
@@ -123,7 +124,7 @@ public class BoxShape implements Volume {
     }
 
     @Override
-    public boolean interruptFlying() {
+    public boolean interruptsFlying() {
         return this.interruptFlying;
     }
 }

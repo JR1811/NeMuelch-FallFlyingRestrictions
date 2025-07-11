@@ -21,11 +21,12 @@ public class SphereShape implements Volume {
     }
 
     public static SphereShape fromNbt(NbtCompound nbt) {
+        NbtCompound shapeNbt = nbt.getCompound("shape");
         return new SphereShape(
-                BlockPos.fromLong(nbt.getLong("center")),
-                nbt.getDouble("distance"),
-                nbt.getBoolean("preventStartFlying"),
-                nbt.getBoolean("interruptFlying")
+                BlockPos.fromLong(shapeNbt.getLong("center")),
+                shapeNbt.getDouble("distance"),
+                shapeNbt.getBoolean("preventStartFlying"),
+                shapeNbt.getBoolean("interruptFlying")
         );
     }
 
@@ -49,13 +50,13 @@ public class SphereShape implements Volume {
     }
 
     @Override
-    public NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
-        nbt.putLong("center", this.center.asLong());
-        nbt.putDouble("distance", this.distance);
-        nbt.putBoolean("preventStartFlying", this.preventStartFlying);
-        nbt.putBoolean("interruptFlying", this.interruptFlying);
-        return nbt;
+    public void toNbt(NbtCompound nbt) {
+        NbtCompound shapeNbt = new NbtCompound();
+        shapeNbt.putLong("center", this.center.asLong());
+        shapeNbt.putDouble("distance", this.distance);
+        shapeNbt.putBoolean("preventStartFlying", this.preventStartFlying);
+        shapeNbt.putBoolean("interruptFlying", this.interruptFlying);
+        nbt.put("shape", shapeNbt);
     }
 
     @Override
@@ -95,7 +96,7 @@ public class SphereShape implements Volume {
     }
 
     @Override
-    public boolean interruptFlying() {
+    public boolean interruptsFlying() {
         return this.interruptFlying;
     }
 }
