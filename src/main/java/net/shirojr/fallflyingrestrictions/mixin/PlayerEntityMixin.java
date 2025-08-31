@@ -14,7 +14,7 @@ public abstract class PlayerEntityMixin {
     private void blockItemEating(boolean ignoreHunger, CallbackInfoReturnable<Boolean> cir) {
         PlayerEntity player = (PlayerEntity) (Object) this;
         if (!ConfigInit.CONFIG.toggleFeatures.enabledEatingWhileFlyingBlock()) return;
-        if (player.isFallFlying() && player.getHungerManager().isNotFull()) {
+        if (player.isFallFlying()) {
             if (ConfigInit.CONFIG.displayWarning.enabledEatingWhileFlyingWarning()) {
                 player.sendMessage(Text.translatable("notification.fallflyingrestrictions.eating_block"), true);
             }
